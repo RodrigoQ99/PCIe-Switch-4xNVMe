@@ -28,3 +28,7 @@ PORTCFG = 100, CKMODE = 0, CHIPMODE = 00, PM_L11_EN_L = 1, CLKBUF_INPUT_SEL = 1.
 - 85 Ω diferencial: TOP/BOTTOM 5.4 mil de ancho y 5.6 mil de separación; capas internas 5.2 / 6.8 mil.
 - Match dentro del par ≤ 5 mil, vía de tierra en cada cambio de capa, caps AC simétricos, no cruzar cortes de plano, plano vaciado bajo los gold fingers.
 - Tarjeta full-height half-length (111.15 × 167.65 mm) con los M.2 a lo largo.
+
+## Netlist
+- El switch venía de dos versiones del símbolo del EVB: la sección B salía del paquete `PI7C9X3G808GP_19` (V1.5) y las demás del `_17` (V01). El netlist fallaba por eso.
+- Se agregó la propiedad `Device = PI7C9X3G808GP` a las cuatro secciones y se renombraron en la sección B los pines `TEST` → `NC` (J4) y `PDC_n_L` → `HP_PDC_n_L`, para que coincidan con el `_17`. Los números de pin no cambian.

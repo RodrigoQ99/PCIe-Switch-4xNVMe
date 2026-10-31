@@ -14,11 +14,12 @@ Hecho por José Rodrigo Quiroa Dávila, estudiante de Ingeniería en Electrónic
 - Potencia ajustada al slot: 12 V para los reguladores y 3.3 V del slot como entrada de potencia de los LMZ31704.
 - Todas las partes tienen footprint asignado.
 
-**PCB: por empezar.** Ya están definidos el stackup de 6 capas y las reglas de 85 Ω diferencial, tomados del EVB.
+**PCB: placa creada.** El netlist pasa sin errores y la placa `layout/PCIe_Switch_4xNVMe.brd` ya tiene las 345 partes y sus nets. Faltan los footprints (Allegro todavía no encuentra la librería). Ya están definidos el stackup de 6 capas y las reglas de 85 Ω diferencial, tomados del EVB.
 
 ## Qué hay en cada carpeta
 
 - `orcad`: el proyecto de Capture (`PCIe_Switch_4xNVMe.opj`) y el esquemático.
+- `layout`: la placa de Allegro.
 - `docs`: decisiones de diseño, tabla de conexiones lane por lane y plan de captura.
 - `herramientas/capture_tcl`: scripts de TCL que usé en Capture para armar los sockets M.2, asignar footprints y revisar las conexiones.
 - `entregables`: aquí irán el PDF del esquemático, los Gerbers y los archivos de taladro.
@@ -27,7 +28,7 @@ El kit de diseño y la tarjeta de evaluación del fabricante no se incluyen en e
 
 ## Lo que falta
 
-1. Generar el netlist y crear la placa en Allegro.
-2. Hacer los footprints que faltan, empezando por el M.2 y los reguladores.
+1. Resolver los pines sobrantes del M.2 (59–66 y 76).
+2. Ruta de librería en Allegro y footprints que faltan, empezando por el M.2 y los reguladores.
 3. Contorno, colocación, ruteo de PCIe y potencia, y DRC.
 4. Gerbers, reporte y video.
