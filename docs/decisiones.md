@@ -32,3 +32,13 @@ PORTCFG = 100, CKMODE = 0, CHIPMODE = 00, PM_L11_EN_L = 1, CLKBUF_INPUT_SEL = 1.
 ## Netlist
 - El switch venía de dos versiones del símbolo del EVB: la sección B salía del paquete `PI7C9X3G808GP_19` (V1.5) y las demás del `_17` (V01). El netlist fallaba por eso.
 - Se agregó la propiedad `Device = PI7C9X3G808GP` a las cuatro secciones y se renombraron en la sección B los pines `TEST` → `NC` (J4) y `PDC_n_L` → `HP_PDC_n_L`, para que coincidan con el `_17`. Los números de pin no cambian.
+
+## Alcance reducido (hoja 11 y 17)
+- Se quitaron las partes de configuración y depuración del EVB: los DIP SW8/SW11/SW14, el botón S7, la EEPROM U8 con J6, el traductor I2C U10 con J7, el buffer U11 con sus 9 LEDs, y las resistencias que solo servían a esas partes.
+- Los straps quedan fijos: en lugar de SW8 hay cables, así que PORTCFG = 100 e I2C_ADDR = 000.
+- PM_L11_EN_L (bola H4) antes recibía el 1 a través de U11; ahora lo pone RP200 (5.1 kΩ a 1.8 V).
+- SCL/SDA del switch: R110 y R114 pasan de 470 Ω sin montar a 5.1 kΩ, como pide el checklist.
+- Se mantiene el PI4ULS5V108: es el que baja PERST# a 1.8 V para el switch.
+
+## Footprint del M.2
+- El símbolo es un HEADER 38x2 (76 pines), pero un M.2 M-key no tiene los pines 59–66 (la muesca) ni el 76. El footprint llevará esos 9 pads de relleno, sin pasta y sin net, para no tocar el símbolo.

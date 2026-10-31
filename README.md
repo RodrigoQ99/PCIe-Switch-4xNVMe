@@ -14,7 +14,7 @@ Hecho por José Rodrigo Quiroa Dávila, estudiante de Ingeniería en Electrónic
 - Potencia ajustada al slot: 12 V para los reguladores y 3.3 V del slot como entrada de potencia de los LMZ31704.
 - Todas las partes tienen footprint asignado.
 
-**PCB: placa creada.** El netlist pasa sin errores y la placa `layout/PCIe_Switch_4xNVMe.brd` ya tiene las 345 partes y sus nets. Faltan los footprints (Allegro todavía no encuentra la librería). Ya están definidos el stackup de 6 capas y las reglas de 85 Ω diferencial, tomados del EVB.
+**PCB: placa creada.** El netlist pasa sin errores y la placa `layout/PCIe_Switch_4xNVMe.brd` ya tiene las 345 partes y sus nets. Allegro ya carga los footprints que vienen del EVB; faltan 9 por dibujar. Ya están definidos el stackup de 6 capas y las reglas de 85 Ω diferencial, tomados del EVB.
 
 ## Qué hay en cada carpeta
 
@@ -28,7 +28,6 @@ El kit de diseño y la tarjeta de evaluación del fabricante no se incluyen en e
 
 ## Lo que falta
 
-1. Resolver los pines sobrantes del M.2 (59–66 y 76).
-2. Ruta de librería en Allegro y footprints que faltan, empezando por el M.2 y los reguladores.
+1. Dibujar los 9 footprints que faltan: M.2 M-key 2280, LMZ31704 (B3QFN-42), LMZ31530 (QFN-72), AP7361C (DFN8 3×3), SO-14, TSSOP-20, ferrita 1812, tantalio 7343 y el conector auxiliar de 6 pines.
 3. Contorno, colocación, ruteo de PCIe y potencia, y DRC.
 4. Gerbers, reporte y video.
