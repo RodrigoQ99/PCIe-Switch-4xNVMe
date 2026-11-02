@@ -41,6 +41,7 @@ class FP:
         self.pads = []            # (num|None, x, y, rot, ps)
         self.ps = {}              # nombre -> spec
         self.lines = []           # (layer, [(x,y)...], width)
+        self.polys = []           # (layer, [(x,y)...]) rellenos
         self.bound = None
         self.ref = (0.0, 0.0)
         self.notes = []
@@ -51,7 +52,7 @@ class FP:
             fig = 'SQUARE'
         tag = {'RECTANGLE': 'r', 'SQUARE': 's', 'CIRCLE': 'c',
                'OBLONG_X': 'o', 'OBLONG_Y': 'o'}[fig]
-        nm = 'smd_%s%03dx%03d' % (tag, round(w * 100), round(h * 100))
+        nm = 'smd_%s%dx%d' % (tag, round(w * 1000), round(h * 1000))
         if paste != 1.0:
             nm += 'p%02d' % round(paste * 100)
         if not mask:
@@ -60,7 +61,7 @@ class FP:
         return nm
 
     def npth(self, d):
-        nm = 'npth_%03d' % round(d * 100)
+        nm = 'npth_%d' % round(d * 1000)
         self.ps[nm] = dict(kind='npth', d=r4(d))
         return nm
 
@@ -71,7 +72,7 @@ class FP:
     def pin(self, num, x, y, ps, rot=0.0):
         self.pads.append((num, r4(x), r4(y), float(rot), ps))
 
-def from_kicad(path, name, th_padstack=None):
+def from_kicad(path, name, th_padstack=None, drop_th=False, renum=None):
     k = sexpr(open(path).read())
     fp = FP(name)
     for p in find(k, 'pad'):
@@ -91,9 +92,13 @@ def from_kicad(path, name, th_padstack=None):
             ps = fp.npth(float(one(p, 'drill')[1]))
             num = None
         else:  # thru_hole
+            if drop_th:
+                continue        # vías térmicas del fabricante: se ponen en el layout
             if not th_padstack:
                 raise SystemExit('%s: pad TH sin padstack asignado' % name)
             ps = fp.existing(th_padstack)
+        if renum and num in renum:
+            num = renum[num]
         fp.pin(num if num else None, x, y, ps, rot)
     crt = []
     for ln in find(k, 'fp_line'):
@@ -108,9 +113,41 @@ def from_kicad(path, name, th_padstack=None):
             fp.lines.append(('PACKAGE GEOMETRY/ASSEMBLY_TOP', pts, 0.0))
         elif lay == 'F.CrtYd':
             crt += pts
+    for rc in find(k, 'fp_rect'):
+        lay = one(rc, 'layer')[1]
+        s, e = one(rc, 'start'), one(rc, 'end')
+        x1, y1, x2, y2 = r4(s[1]), r4(-float(s[2])), r4(e[1]), r4(-float(e[2]))
+        pts = [(x1, y1), (x2, y1), (x2, y2), (x1, y2), (x1, y1)]
+        if lay == 'F.SilkS':
+            fp.lines.append(('PACKAGE GEOMETRY/SILKSCREEN_TOP', pts, 0.12))
+        elif lay == 'F.Fab':
+            fp.lines.append(('PACKAGE GEOMETRY/ASSEMBLY_TOP', pts, 0.0))
+        elif lay == 'F.CrtYd':
+            crt += pts
+    polymap = {'F.Cu': 'ETCH/TOP', 'F.Mask': 'PACKAGE GEOMETRY/SOLDERMASK_TOP',
+               'F.Paste': 'PACKAGE GEOMETRY/PASTEMASK_TOP'}
+    for g in find(k, 'fp_poly'):
+        lay = one(g, 'layer')[1]
+        if lay in polymap:
+            pts = [(r4(q[1]), r4(-float(q[2]))) for q in one(g, 'pts')[1:]]
+            if pts[0] != pts[-1]:
+                pts.append(pts[0])
+            fp.polys.append((polymap[lay], pts))
     if crt:
         xs = [p[0] for p in crt]; ys = [p[1] for p in crt]
         fp.bound = (min(xs), min(ys), max(xs), max(ys))
+    else:   # sin courtyard: caja de pads + ensamble + 0.25 mm
+        xs, ys = [], []
+        for num, x, y, rot, ps in fp.pads:
+            sp = fp.ps[ps]; w = sp.get('w', sp.get('d', 0)); h = sp.get('h', sp.get('d', 0))
+            if rot in (90.0, 270.0, -90.0):
+                w, h = h, w
+            xs += [x - w / 2, x + w / 2]; ys += [y - h / 2, y + h / 2]
+        for lay, pts, w in fp.lines:
+            if lay.endswith('ASSEMBLY_TOP'):
+                xs += [p[0] for p in pts]; ys += [p[1] for p in pts]
+        fp.bound = (round(min(xs) - 0.25, 3), round(min(ys) - 0.25, 3),
+                    round(max(xs) + 0.25, 3), round(max(ys) + 0.25, 3))
     for t in find(k, 'fp_text'):
         if t[1] == 'reference':
             at = one(t, 'at'); fp.ref = (r4(at[1]), r4(-float(at[2])))
@@ -150,6 +187,21 @@ def build_all():
                    '455580003', th_padstack='pad100cir70ds105')
     m.notes.append('Geometria Mini-Fit Jr 5569-06A1 R/A (misma familia que 45558-0003); DNP.')
     fps.append(m)
+    ul = os.path.join(HERE, 'ul')
+    a = from_kicad(os.path.join(ul, 'RVQ0042A.kicad_mod'), 'B3QFN-42', drop_th=True)
+    a.notes.append('UL RVQ0042A; isla PH (pin 42) como ETCH/TOP; vias termicas en layout.')
+    fps.append(a)
+    b = from_kicad(os.path.join(ul, 'RLG0072A.kicad_mod'), 'QFN72-16R15X15R15-_8', drop_th=True)
+    b.notes.append('UL RLG0072A; vias termicas en layout.')
+    fps.append(b)
+    c = from_kicad(os.path.join(ul, 'CONN67_2199230_TEC.kicad_mod'), 'M2_MKEY_2280', renum={'77': None})
+    dummy = c.smd(0.2, 0.2, 'CIRCLE', paste=0.0, mask=False)
+    for n in range(59, 67):        # llave M: sin contacto; pads de relleno tapados con mascara
+        x = -18.5 + 0.25 * (n - 1)
+        y = 7.55 if n % 2 else 0.0   # impares en la fila de 1/75 (y=-7.55 en KiCad)
+        c.pin(str(n), x, y, dummy)
+    c.notes.append('UL TE 1-2199230-6; 76 = aleta (sin net), 77 mecanica, 59-66 relleno.')
+    fps.append(c)
     return fps
 
 # ---------------------------------------------------------------- verificación de pines
@@ -199,7 +251,7 @@ procedure( fpSMD(name fig w h pw ph masked)
     pads = list(make_axlPadStackPad(?layer "TOP" ?type 'REGULAR ?figure fig ?figureSize list(w h)))
     when(masked
       pads = cons(make_axlPadStackPad(?layer "SOLDERMASK_TOP" ?type 'REGULAR ?figure fig
-                    ?figureSize list(w+2*MASK h+2*MASK)) pads))
+                    ?figureSize list(w+2*__MASK__ h+2*__MASK__)) pads))
     when(pw > 0.0
       pads = cons(make_axlPadStackPad(?layer "PASTEMASK_TOP" ?type 'REGULAR ?figure fig
                     ?figureSize list(pw ph)) pads))
@@ -223,6 +275,11 @@ procedure( fpPin(ps x y num rot)
     r = axlDBCreatePin(ps list(x y) pt rot)
     unless(r fpErr(sprintf(nil "pin %L en %L %L" num x y)))
     r))
+
+procedure( fpPoly(layer pts)
+  let((p)
+    p = axlPathStart(pts 0.0)
+    unless(p && axlDBCreateShape(p t layer) fpErr(strcat("shape " layer)))))
 
 procedure( fpLine(layer pts w)
   unless(axlDBCreateLine(pts w layer) fpErr(strcat("linea " layer))))
@@ -259,6 +316,8 @@ def skill_fp(fp, fn):
         o.append('  fpPin("%s" %s %s %s %s)' % (ps, fmt(x), fmt(y), '"%s"' % num if num else 'nil', fmt(rot)))
     for lay, pts, w in fp.lines:
         o.append('  fpLine("%s" list(%s) %s)' % (lay, ' '.join('list(%s %s)' % (fmt(a), fmt(b)) for a, b in pts), fmt(w)))
+    for lay, pts in fp.polys:
+        o.append('  fpPoly("%s" list(%s))' % (lay, ' '.join('list(%s %s)' % (fmt(a), fmt(b)) for a, b in pts)))
     o.append('  axlDBCreateText("%s" list(%s %s) fpTxt(2) "REF DES/SILKSCREEN_TOP")' % (
         'U*', fmt(fp.ref[0]), fmt(fp.ref[1])))
     x1, y1, x2, y2 = fp.bound
@@ -270,7 +329,7 @@ def main():
     pst, out = sys.argv[1], sys.argv[2]
     req = required_pins(pst)
     fps = build_all()
-    body, calls, ok = [HDR.replace('MASK', str(MASK))], [], True
+    body, calls, ok = [HDR.replace('__MASK__', str(MASK))], [], True
     for i, fp in enumerate(fps):
         have = {p[0] for p in fp.pads if p[0]}
         need = req.get(fp.name.upper())
