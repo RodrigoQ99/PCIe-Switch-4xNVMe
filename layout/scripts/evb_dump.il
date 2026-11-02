@@ -1,0 +1,31 @@
+;; evb_dump.il -- lee geometria y colocacion del EVB (solo lectura) y vuelve a la placa nueva
+;; Uso (Allegro con cwd = 03 Layout):  skill load("scripts/evb_dump.il")   skill evbDump()
+procedure( dmpLayer(p lay)
+  let((objs)
+    axlVisibleDesign(nil)
+    axlVisibleLayer(lay t)
+    axlClearSelSet()
+    axlSetFindFilter(?enabled list("noall" "shapes" "lines" "linesegs" "rectangles" "frectangles" "figures" "text")
+                     ?onButtons list("shapes" "lines" "linesegs" "rectangles" "frectangles" "figures" "text"))
+    axlAddSelectAll()
+    objs = axlGetSelSet()
+    fprintf(p "LAYER %s n=%d\n" lay length(objs))
+    foreach(o objs
+      fprintf(p " OBJ %L bbox=%L\n" o->objType o->bBox)
+      errset(foreach(s o->segments fprintf(p "  SEG %L %L %L\n" s->objType s->startEnd s->xy)) nil))
+    axlClearSelSet()))
+
+procedure( evbDump2()
+  ;; vuelca el diseno ACTUAL (abrir EVB_ref.brd antes)
+  let((p)
+    p = outfile("evb_dump2.txt" "w")
+    fprintf(p "DESIGN %L\n" axlCurrentDesign())
+    fprintf(p "UNITS %L\n" axlDBGetDesignUnits())
+    foreach(l list("BOARD GEOMETRY/OUTLINE" "BOARD GEOMETRY/DESIGN_OUTLINE" "BOARD GEOMETRY/CUTOUT"
+                   "BOARD GEOMETRY/ROUTE_KEEPOUT" "ROUTE KEEPOUT/ALL" "PACKAGE KEEPOUT/ALL")
+      unless(errset(dmpLayer(p l) t) fprintf(p "LAYER %s FALLO\n" l)))
+    foreach(s axlDBGetDesign()->symbols
+      errset(fprintf(p "SYM %L %L %L %L %L\n" s->refdes s->name s->xy s->rotation s->isMirrored) t))
+    close(p)
+    axlVisibleDesign(t)
+    printf("evb_dump2.txt listo\n")))
