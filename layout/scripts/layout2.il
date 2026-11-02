@@ -13,8 +13,8 @@ procedure( l2_dump(fn)
         fprintf(f "S %L %L %.3f %.3f %.1f %L %L %L\n" s->refdes s->name
           car(s->xy) cadr(s->xy) s->rotation s->isMirrored s->bBox pb)
         foreach(p s->pins
-          fprintf(f "P %L %L %.3f %.3f %L %L\n" s->refdes p->number car(p->xy) cadr(p->xy)
-            if(p->net && p->net->name p->net->name "") p->definition->name))))
+          fprintf(f "P %L %L %.3f %.3f %L %L %L\n" s->refdes p->number car(p->xy) cadr(p->xy)
+            if(p->net && p->net->name p->net->name "") p->definition->name p->bBox))))
     errset(foreach(m d->drcs when(m->name fprintf(f "D %L %L %L\n" m->xy m->layer m->name))))
     close(f) t))
 
@@ -126,3 +126,24 @@ procedure( l2_step2b()
   l2Msg(sprintf(nil "DRC=%L" axlDRCUpdate(nil)))
   close(l2Log) l2Log = nil
   l2_dump("place3.txt"))
+
+;; desacoples bajo el BGA: footprint C0402_BGA (como en el EVB) via ALT_SYMBOLS
+L2_BGACAPS = list("C120" "C121" "C122" "C125" "C126" "C128" "C129" "C130" "C133" "C134" "C136" "C137" "C140"
+  "C141" "C142" "C143" "C147" "C148" "C149" "C151" "C152" "C153" "C154" "C156" "C157" "C158" "C159" "C161"
+  "C162" "C164" "C165" "C166" "C167")
+procedure( l2_bgacaps()
+  let((s cd ok n)
+    n = 0
+    l2Log = outfile("l2c.log" "w")
+    foreach(r L2_BGACAPS
+      s = l2_find(r)
+      cd = s && s->component && s->component->compdef
+      when(cd && !axlAltSymbolList(cd 'bottom)
+        l2Msg(sprintf(nil "prop %L %L" cd->name axlDBAddProp(cd list("ALT_SYMBOLS" "(T:C0402_BGA;B:C0402_BGA)")))))
+      ok = s && axlAltSymbolReplace(r "C0402_BGA")
+      when(ok n = n + 1)
+      l2Msg(sprintf(nil "alt %s %L" r ok)))
+    l2Msg(sprintf(nil "reemplazadas %d  DRC=%L" n axlDRCUpdate(nil)))
+    close(l2Log) l2Log = nil
+    l2_dump("place6.txt")
+    n))

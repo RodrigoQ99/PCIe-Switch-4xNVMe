@@ -29,3 +29,23 @@ procedure( evbDump2()
     close(p)
     axlVisibleDesign(t)
     printf("evb_dump2.txt listo\n")))
+
+;; evbDump3: clines y vias del diseno ACTUAL (abrir EVB_ref.brd antes) -> evb_dump3.txt
+procedure( evbDump3()
+  let((p n)
+    p = outfile("evb_dump3.txt" "w")
+    fprintf(p "DESIGN %L\n" axlCurrentDesign())
+    foreach(net axlDBGetDesign()->nets
+      n = net->name
+      foreach(b net->branches
+        foreach(o b->children
+          case(o->objType
+            ("via" fprintf(p "V %L %L %.3f %.3f %L %L\n" n o->definition->name car(o->xy) cadr(o->xy) o->startEnd o->isMirrored))
+            ("path"
+              foreach(s o->segments
+                fprintf(p "C %L %L %.3f %L %L\n" n o->layer s->width s->objType s->startEnd)))))))
+    close(p)
+    printf("evb_dump3.txt listo\n")))
+
+procedure( evbOpen() axlOpenDesign(?design "EVB_ref.brd" ?mode "wf"))
+procedure( newOpen() axlOpenDesign(?design "pcie_switch_4xnvme.brd" ?mode "wf"))
