@@ -1,0 +1,13 @@
+;; cap.il -- vistas para capturas del reporte (top/bottom)
+procedure( cap_vis(side)
+  let((ls)
+    ls = list("BOARD GEOMETRY/DESIGN_OUTLINE" "BOARD GEOMETRY/ASSEMBLY_DETAIL"
+              strcat("PACKAGE GEOMETRY/ASSEMBLY_" side) strcat("PACKAGE GEOMETRY/SILKSCREEN_" side)
+              strcat("REF DES/SILKSCREEN_" side) strcat("REF DES/ASSEMBLY_" side)
+              strcat("PIN/" side) strcat("ETCH/" side) strcat("VIA CLASS/" side))
+    axlVisibleDesign(nil)
+    foreach(l ls axlVisibleLayer(l t))
+    axlVisibleUpdate(t)
+    axlShell("zoom fit")
+    t))
+procedure( cap_all() axlVisibleDesign(t) axlVisibleUpdate(t) t)
