@@ -31,3 +31,17 @@ Colocación inicial: U6 en (2283.9, 1449.9) rot 180 (EVB desplazado −600 mil);
   - Contorno de cada módulo 2280 en BOARD GEOMETRY/ASSEMBLY_DETAIL.
 - `cap.il`: `cap_vis("TOP"|"BOTTOM")` deja visibles contorno, ensamble, serigrafía, pines y cobre de una cara y hace zoom fit; `cap_all()` restaura.
 - DRC tras el paso: 70 = 12 de espaciado del ruteo upstream (previos) + 58 de *same net spacing* de las vías térmicas (intencionales; se resuelven en Constraint Manager).
+
+## Paso 2 y planos (rules.il, r2b.il, dpfix.il, planes.il)
+- `rules.il` → `r2_go()`: same-net DRC apagado (vías térmicas dentro del cobre del pad), CSet de espaciado DIFF_SP (línea-línea 5 mil),
+  DIFFP_PHASE_TOL = 5 mil en los 37 diff pairs, clase PWR_NETS (CSet físico PWR, 12 mil mín.) con los rieles de potencia.
+- `r2b.il` → `r2b_go()`: tabla clase-clase DIFF_85OHM*/DIFF_85OHM* → DIFF_SP (quita los errores línea-línea entre P y N en los quiebres).
+- `../route/dpfix.il` → `dpf_go()`: iguala P/N del upstream (P era ~45 mil más largo): 5 ondulaciones rectangulares en el diagonal largo del N, hacia afuera del par.
+- `planes.il` → `pl_go()`: planos dinámicos GND02 = GND y PWR05 = 3.3V_EXT (contorno −25 mil, sin cobre bajo los dedos, y < 200).
+- Resultado: DRC = 0.
+
+## PCB Router (Specctra): no utilizable en esta PC
+- Allegro lanza `specctra.exe -mpssession <usuario>_<diseño><pid>_<n> ... "<dsn>"` sin comillas en la sesión; el usuario de Windows
+  tiene espacios ("Maria Priscila Quiro"), el router parte el argumento y falla (exit 3). Copiar la placa a C:\rt no lo resuelve.
+- Relanzado a mano con la sesión entre comillas (`../route/router_watch.ps1`), el router entra en modo demo: no encuentra licencia.
+- `rt.il` queda como referencia (copia de dsn/do a C:\rt y llamada directa).
