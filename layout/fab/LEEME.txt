@@ -1,0 +1,17 @@
+PCIe Gen3 x4 -> 4x NVMe (PI7C9X3G808GP) - archivos de fabricacion
+Generados con Cadence Allegro (OrCAD X 25.1) desde pcie_switch_4xnvme.brd (8-nov-2026).
+
+Formato: Gerber RS274X, pulgadas, 2.5 (cero a la izquierda suprimido). Taladros: Excellon mejorado, pulgadas 2.5.
+Placa: 6 capas, 61.6 mil (1.56 mm). Orden de capas:
+  1 TOP.art          (senal, componentes)
+  2 GND02.art        (plano GND)
+  3 ART03.art        (senal)
+  4 ART04.art        (senal + isla 0.95VDDC)
+  5 PWR05.art        (plano 3.3V_EXT)
+  6 BOTTOM.art       (senal, componentes)
+Mascaras: SOLDERMASK_TOP/BOTTOM.art. Pasta: PASTEMASK_TOP/BOTTOM.art. Serigrafia: SILKSCREEN_TOP/BOTTOM.art.
+Contorno: OUTLINE.art (borde de la tarjeta, gold fingers PCIe x4).
+Taladros: pcie_switch_4xnvme-1-6.drl (metalizados: 882 x 10 mil vias, 6 x 70 mil, 4 x 86.6 mil)
+          pcie_switch_4xnvme-1-6-np.drl (no metalizados: 4 x 43 mil, 4 x 63 mil, 2 x 126 mil)
+Impedancia controlada: 85 ohm diferencial (TOP/BOTTOM 5.4/5.6 mil; ART03/ART04 5.2/6.8 mil).
+Gold fingers: oro duro con bisel (chaflan) segun PCIe CEM.
