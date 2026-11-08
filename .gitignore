@@ -1,35 +1,11 @@
-# Archivos temporales / de sesión de OrCAD Capture y Allegro (OrCAD X 25.1)
+# Archivos temporales de OrCAD
 *.lck
 *.DSNlck
 *.OLBlck
 *.jrl
-*.jrl,*
 *.log
-*.log,*
-*.dmp
-*.SAV
 *.DBK
-*.TMP
+*.SAV
 *.bak
-master.tag
-signoise.run/
-*-PSpiceFiles/
-*-PSpiceFiles/
-# netlist generado (se regenera desde Capture)
-pstxnet.dat
-pstxprt.dat
-pstchip.dat
-netrev.lst
-eco.txt*
-# autorouter
-specctra.*
-*.did
-*_rules.do
-*_forget.do
-pasde.do
-
-# carpetas que genera Capture
 *_output/
-# kit del fabricante (no se redistribuye)
-kit/
-
+*-PSpiceFiles/
