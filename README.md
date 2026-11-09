@@ -40,7 +40,7 @@ Datos generales de la tarjeta:
 
 | Carpeta | Contenido |
 |---|---|
-| `esquematico/` | Proyecto de OrCAD Capture (`.opj`, `.DSN`), esquemático en PDF y BOM (`.csv`) |
+| `esquematico/` | Proyecto de OrCAD Capture (`.opj`, `.DSN`), esquemático en PDF (14 hojas) y BOM (`.csv`) |
 | `layout/` | Tarjeta de Allegro (`.brd`) y footprints (`footprints/`: `.dra`, `.psm`, `.pad`) |
 | `fabricacion/` | Gerbers (`.art`), taladros (`.drl`), `LEEME.txt` con el orden de capas, todo junto en `.zip` y una vista en PDF de los Gerbers |
 
