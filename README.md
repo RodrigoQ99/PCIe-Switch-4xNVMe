@@ -15,7 +15,7 @@
 | **Curso** | Electrónica 2 y Diseño Electrónico |
 | **Catedrático** | Víctor Vargas |
 
-Guatemala, noviembre de 2026
+Guatemala, noviembre de 2026.
 
 </div>
 
